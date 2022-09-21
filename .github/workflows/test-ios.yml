@@ -78,6 +78,12 @@ jobs:
          cd /Users/runner
          ls
          cat export_options.plist
+         
+    - name: upload file
+      uses: actions/upload-artifact@v2
+      with:
+         name: test
+         path: /Users/runner/export_options.plist
 
    
     - name: Export Archive
