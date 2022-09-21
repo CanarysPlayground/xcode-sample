@@ -73,19 +73,7 @@ jobs:
           mkdir xarchive
           xcode-project use-profiles
           xcodebuild archive -workspace ToDo.xcodeproj/project.xcworkspace -scheme ToDo -configuration debug -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive
-   
-    - run: |
-         cd /Users/runner
-         ls
-         cat export_options.plist
-         
-    - name: upload file
-      uses: actions/upload-artifact@v2
-      with:
-         name: test
-         path: /Users/runner/export_options.plist
-
-   
+    
     - name: Export Archive
       run: |
           mkdir ipafiles
