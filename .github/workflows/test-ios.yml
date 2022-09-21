@@ -27,7 +27,8 @@ jobs:
           gem which cocoapods
     - name: Installing pods
       run: |
-         pod deintegrate ${{github.workspace}}
+         cd ${{github.workspace}}
+         pod deintegrate
          pod install
          ls
          cd Pods
