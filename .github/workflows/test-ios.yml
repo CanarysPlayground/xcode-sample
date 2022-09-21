@@ -64,7 +64,7 @@ jobs:
       run: |
           mkdir xarchive
           xcode-project use-profiles
-          xcodebuild archive -workspace ${{github.workspace}}/ToDo.xcodeproj/project.xcworkspace -scheme xcode-sample -configuration debug -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive
+          xcodebuild archive -workspace ${{github.workspace}}/ToDo.xcodeproj/project.xcworkspace -scheme ToDo.xcscheme -configuration debug -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive
     - name: Export Archive
       run: |
           mkdir ipafiles
