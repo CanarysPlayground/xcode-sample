@@ -73,7 +73,11 @@ jobs:
           mkdir xarchive
           xcode-project use-profiles
           xcodebuild archive -workspace ToDo.xcodeproj/project.xcworkspace -scheme ToDo -configuration debug -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive
- 
+   
+    - run: |
+         cd /Users/runner
+         ls
+
    
     - name: Export Archive
       run: |
