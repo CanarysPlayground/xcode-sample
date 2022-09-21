@@ -1,0 +1,77 @@
+name: iOS-test
+
+on: 
+  push:
+    branches:
+    - feature-1
+  workflow_dispatch:
+
+jobs:
+  Build:
+    name: Build 🛠
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set Default Scheme
+      run: |
+          scheme_list=$(xcodebuild -list -json | tr -d "\n")
+          default=$(echo $scheme_list | ruby -e "require 'json'; puts JSON.parse(STDIN.gets)['project']['targets'][0]")
+          echo $default | cat >default
+          echo Using default scheme: $default
+    
+    - name: Set default Xcode 12.4
+      run: |
+        sudo xcode-select -s /Applications/Xcode_12.4.app
+   
+    - name: Folder for certificates and profiles
+      run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          mkdir -p ~/Library/MobileDevice/Certificates/
+  
+    - name: Get Certifcate
+      id: certfile
+      uses: timheuer/base64-to-file@v1
+      with:
+         fileName: 'certificate.p12'
+         encodedString: ${{ secrets.P12_XCODE }}
+         
+    - name: Copy Certificate
+      run: mv ${{ steps.certFile.outputs.filePath }} ~/Library/MobileDevice/Certificates/certificate.p12
+      
+    - name: Get Profile
+      id: profile
+      uses: timheuer/base64-to-file@v1
+      with:
+         fileName: 'development.mobileprovision'
+         encodedString: ${{ secrets.MOBILEPROVISION_XCODE }}
+         
+    - name: Copy Profile
+      run: mv ${{ steps.profile.outputs.filePath }} ~/Library/MobileDevice/Provisioning\ Profiles/decodefile.mobileprovision
+      
+    - name: Install dependencies
+      uses: actions/setup-python@v2
+      with:
+          python-version: 3.7
+    - name: Install python dependencies
+      run:  python -m pip install codemagic-cli-tools
+      
+    - name: Intialize Keychaiin with Certificate
+      run: |
+          keychain initialize
+          keychain add-certificates --certificate ~/Library/MobileDevice/Certificates/certificate.p12 --certificate-password ${{ secrets.P12_PASSWORD }}
+
+    - name: Building IPA
+      run: |
+          mkdir xarchive
+          xcode-project use-profiles
+          xcodebuild archive -workspace ${{github.workspace}}/ToDo.xcodeproj/project.xcworkspace -scheme xcode-sample -configuration debug -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive
+    - name: Export Archive
+      run: |
+          mkdir ipafiles
+          xcodebuild -exportArchive -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive  -exportPath ${{github.workspace}}/ipafiles/iosapp.ipa  -exportOptionsPlist ${{github.workspace}}/ToDoUITests/Info.plist
+    - name: upload ipa artifacts
+      uses: actions/upload-artifact@v2
+      with:
+         name: dev-ipa
+         path: ${{github.workspace}}/ipafiles
+         
