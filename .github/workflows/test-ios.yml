@@ -25,14 +25,11 @@ jobs:
     
     - run: |
           gem which cocoapods
-#     - name: Installing pods
-#       run: |
-#          cd ${{github.workspace}}
-#          pod deintegrate
-#          pod install
-#          ls
-#          cd Pods
-#          ls
+    - name: Installing pods
+      run: |
+         cd ${{github.workspace}}
+         pod deintegrate
+         ls
     
     - name: Folder for certificates and profiles
       run: |
