@@ -77,6 +77,7 @@ jobs:
     - run: |
          cd /Users/runner
          ls
+         cat export_options.plist
 
    
     - name: Export Archive
