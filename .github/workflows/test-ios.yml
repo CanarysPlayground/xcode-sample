@@ -22,7 +22,17 @@ jobs:
     - name: Set default Xcode 12.4
       run: |
         sudo xcode-select -s /Applications/Xcode_12.4.app
-   
+    
+    - run: |
+          gem which cocoapods
+    - name: Installing pods
+      run: |
+         pod deintegrate ${{github.workspace}}
+         pod install
+         ls
+         cd Pods
+         ls
+    
     - name: Folder for certificates and profiles
       run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
