@@ -81,6 +81,27 @@ jobs:
     - name: upload ipa artifacts
       uses: actions/upload-artifact@v2
       with:
-         name: dev-ipa
+         name: ToDo
          path: ${{github.workspace}}/ipafiles/iosapp/ToDo.ipa
+         
+  app-center:
+    name: ⬆️ Upload to App Center
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: ToDo
+    
+    - run: ls -la
+    - name: Upload apk to App Center
+      uses: wzieba/AppCenter-Github-Action@v1
+      with:
+        appName: ramesh.kumar-ecanarys.com/ToDo
+        token: ${{secrets.APP_CENTER_TOKEN}}
+        group: Beta-testers
+        file: ${{GitHub.Workspace}}/ToDo.ipa
+        notifyTesters: true
+        debug: false
          
