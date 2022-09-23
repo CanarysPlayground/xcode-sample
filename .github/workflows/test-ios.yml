@@ -3,12 +3,12 @@ name: iOS-test
 on: 
   push:
     branches:
-    - patch
+    - feature
   workflow_dispatch:
 
 jobs:
   Build:
-    name: Build 🛠
+    name: Build App 🛠
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -78,12 +78,71 @@ jobs:
       run: |
           mkdir ipafiles
           xcodebuild -exportArchive -archivePath ${{github.workspace}}/xarchive/xcode-sample.xcarchive  -exportPath ${{github.workspace}}/ipafiles/iosapp  -exportOptionsPlist ${{github.workspace}}/ToDoUITests/export_options.plist
-    - name: upload ipa artifacts
+    - name: upload ipa
       uses: actions/upload-artifact@v2
       with:
          name: ToDo
          path: ${{github.workspace}}/ipafiles/iosapp/ToDo.ipa
-         
+  
+  codeql:
+    name: CodeQL 🔆
+    runs-on: ubuntu-latest
+    needs: Build
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'python' ]
+    steps:
+    
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: ${{ matrix.language }}
+
+    # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v1
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
+  linter:
+    name: 🔍 Lint Code
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+    
+    - uses: actions/checkout@v3
+    - name: Get branch name (merge)
+      if: github.event_name != 'pull_request'
+      shell: bash
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+
+    - name: Get branch name (pull request)
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+
+    - name: Print the branch name
+      run: echo ${{ env.BRANCH_NAME }}
+
+    - name: Run Super linter
+      id: linter
+      uses: github/super-linter@v4.9.6
+      env:
+        VALIDATE_ALL_CODEBASE: false
+        VALIDATE_JAVA: true
+        VALIDATE_JAVASCRIPT_ES: true
+        VALIDATE_JAVASCRIPT_STANDARD: true        
+        DEFAULT_BRANCH: ${{ env.BRANCH_NAME }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  
   app-center:
     name: ⬆️ Upload to App Center
     runs-on: ubuntu-latest
@@ -95,7 +154,7 @@ jobs:
         name: ToDo
     
     - run: ls -la
-    - name: Upload apk to App Center
+    - name: Upload ipa to App Center
       uses: wzieba/AppCenter-Github-Action@v1
       with:
         appName: ramesh.kumar-ecanarys.com/ToDo
